@@ -126,6 +126,7 @@ class TicketCard extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(ticket.title,
                 style:
@@ -133,7 +134,7 @@ class TicketCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(ticket.description,
                 style: const TextStyle(color: Colors.black54)),
-            const Spacer(),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

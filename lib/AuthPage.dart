@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'services/auth_service.dart';
+import 'TicketListPage.dart';
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
@@ -11,22 +14,37 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  void _login() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      // Simulate login
-      Future.delayed(const Duration(seconds: 2), () {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = await _authService.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (user != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) =>  TicketListPage()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successful')),
-        );
-      });
+      }
     }
   }
 
@@ -154,12 +172,30 @@ class _AuthPageState extends State<AuthPage> {
                               ),
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                try {
+                                  setState(() => _isLoading = true);
+                                  await _authService.signUp(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Account created successfully')),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())),
+                                  );
+                                } finally {
+                                  setState(() => _isLoading = false);
+                                }
+                              },
                               child: const Text(
                                 'Sign Up',
                                 style: TextStyle(color: Colors.indigo),
                               ),
                             ),
+
                           ],
                         ),
                       ],
