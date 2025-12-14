@@ -1,47 +1,45 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // LOGIN
   Future<User?> signIn({
     required String email,
     required String password,
   }) async {
-    try {
-      UserCredential userCredential =
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } on FirebaseAuthException catch (e) {
-      throw e.message ?? 'Login failed';
-    }
+    final result = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return result.user;
   }
 
-  // SIGN UP
+  // SIGN UP + CREATE FIRESTORE USER
   Future<User?> signUp({
     required String email,
     required String password,
   }) async {
-    try {
-      UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } on FirebaseAuthException catch (e) {
-      throw e.message ?? 'Signup failed';
+    // 1. Create auth user
+    final result = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final user = result.user;
+
+    if (user != null) {
+      // 2. Create Firestore document
+      await _firestore.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        'email': email,
+        'role': 'client', // 👈 default role
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     }
-  }
 
-  // LOGOUT
-  Future<void> signOut() async {
-    await _auth.signOut();
+    return user;
   }
-
-  // CURRENT USER
-  User? get currentUser => _auth.currentUser;
 }

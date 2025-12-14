@@ -1,166 +1,225 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-// Sample Ticket Model
-class Ticket {
-  final String title;
-  final String description;
-  final String status;
-  final String priority;
-
-  Ticket({
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.priority,
-  });
-}
+import 'widgets/ticket_card.dart';
 
 class TicketListPage extends StatelessWidget {
-   TicketListPage({super.key});
+  TicketListPage({super.key});
 
-  // Sample data
-  final List<Ticket> tickets =  [
-    Ticket(
-        title: "Login Issue",
-        description: "Cannot login to account",
-        status: "Open",
-        priority: "High"),
-    Ticket(
-        title: "Bug in Payment",
-        description: "Payment fails intermittently",
-        status: "In Progress",
-        priority: "Medium"),
-    Ticket(
-        title: "Feature Request",
-        description: "Add dark mode",
-        status: "Resolved",
-        priority: "Low"),
-    Ticket(
-        title: "App Crash",
-        description: "App crashes on launch",
-        status: "Open",
-        priority: "High"),
-  ];
+  final String uid = FirebaseAuth.instance.currentUser!.uid;
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Open':
-        return Colors.redAccent;
-      case 'In Progress':
-        return Colors.orangeAccent;
-      case 'Resolved':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+  // CREATE TICKET
+  Future<void> createTicket({
+    required String title,
+    required String description,
+    required String priority,
+  }) async {
+    await FirebaseFirestore.instance.collection('tickets').add({
+      'title': title,
+      'description': description,
+      'status': 'Open',
+      'priority': priority,
+      'ownerId': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+  Future<void> updateTicket({
+    required String ticketId,
+    required String title,
+    required String description,
+    required String priority,
+  }) async {
+    await FirebaseFirestore.instance
+        .collection('tickets')
+        .doc(ticketId)
+        .update({
+      'title': title,
+      'description': description,
+      'priority': priority,
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tickets"),
-        backgroundColor: Colors.deepPurple.shade50,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: size.width < 600
-            ? ListView.builder(
-          itemCount: tickets.length,
-          itemBuilder: (context, index) {
-            final ticket = tickets[index];
-            return TicketCard(ticket: ticket);
-          },
-        )
-            : GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 3.0,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-          ),
-          itemCount: tickets.length,
-          itemBuilder: (context, index) {
-            final ticket = tickets[index];
-            return TicketCard(ticket: ticket);
-          },
+  // CREATE TICKET DIALOG
+  void _showCreateTicketDialog(BuildContext context) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String priority = 'Low';
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Create Ticket'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            DropdownButtonFormField<String>(
+              value: priority,
+              decoration: const InputDecoration(labelText: 'Priority'),
+              items: const [
+                DropdownMenuItem(value: 'Low', child: Text('Low')),
+                DropdownMenuItem(value: 'Medium', child: Text('Medium')),
+                DropdownMenuItem(value: 'High', child: Text('High')),
+              ],
+              onChanged: (value) => priority = value!,
+            ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to Create Ticket page
-        },
-        backgroundColor: Colors.deepPurple.shade50,
-        child: const Icon(Icons.add),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleController.text.isEmpty ||
+                  descriptionController.text.isEmpty) {
+                return;
+              }
+
+              await createTicket(
+                title: titleController.text,
+                description: descriptionController.text,
+                priority: priority,
+              );
+
+              Navigator.pop(context);
+            },
+            child: const Text('Create'),
+          ),
+        ],
       ),
     );
   }
-}
+  void _showEditTicketDialog(
+      BuildContext context,
+      String ticketId,
+      String currentTitle,
+      String currentDescription,
+      String currentPriority,
+      ) {
+    final titleController = TextEditingController(text: currentTitle);
+    final descriptionController =
+    TextEditingController(text: currentDescription);
+    String priority = currentPriority;
 
-class TicketCard extends StatelessWidget {
-  final Ticket ticket;
-
-  const TicketCard({super.key, required this.ticket});
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Open':
-        return Colors.redAccent;
-      case 'In Progress':
-        return Colors.orangeAccent;
-      case 'Resolved':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Edit Ticket'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            DropdownButtonFormField<String>(
+              value: priority,
+              decoration: const InputDecoration(labelText: 'Priority'),
+              items: const [
+                DropdownMenuItem(value: 'Low', child: Text('Low')),
+                DropdownMenuItem(value: 'Medium', child: Text('Medium')),
+                DropdownMenuItem(value: 'High', child: Text('High')),
+              ],
+              onChanged: (value) => priority = value!,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await updateTicket(
+                ticketId: ticketId,
+                title: titleController.text,
+                description: descriptionController.text,
+                priority: priority,
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(ticket.title,
-                style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(ticket.description,
-                style: const TextStyle(color: Colors.black54)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(ticket.status).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    ticket.status,
-                    style: TextStyle(
-                        color: _getStatusColor(ticket.status),
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Text(
-                  ticket.priority,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.indigo),
-                ),
-              ],
-            )
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Tickets")),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('tickets')
+            .where('ownerId', isEqualTo: uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error loading tickets"));
+          }
+
+          final docs = snapshot.data?.docs ?? [];
+
+          if (docs.isEmpty) {
+            return const Center(child: Text("No tickets yet"));
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+
+              return TicketCard(
+                id: doc.id,
+                title: data['title'],
+                description: data['description'],
+                status: data['status'],
+                priority: data['priority'],
+                onDelete: () async {
+                  await FirebaseFirestore.instance
+                      .collection('tickets')
+                      .doc(doc.id)
+                      .delete();
+                },
+                onEdit: () {
+                  _showEditTicketDialog(
+                    context,
+                    doc.id,
+                    data['title'],
+                    data['description'],
+                    data['priority'],
+                  );
+                },
+              );
+            },
+          );
+
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCreateTicketDialog(context),
+        child: const Icon(Icons.add),
       ),
     );
   }
