@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pfa5/FconsultantTicketPage.dart';
 import 'services/auth_service.dart';
 import 'TicketListPage.dart';
 class AuthPage extends StatefulWidget {
@@ -30,10 +32,30 @@ class _AuthPageState extends State<AuthPage> {
       );
 
       if (user != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) =>  TicketListPage()),
-        );
+        // Get the user document from Firestore
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        final role = doc.data()?['role'] ?? 'client'; // default to client if missing
+
+        if (role == 'client') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => TicketListPage()),
+          );
+        } else if (role == 'fconsultant') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => FconsultantTicketPage()),
+          );
+        } else {
+          // fallback
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unknown role')),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -47,6 +69,7 @@ class _AuthPageState extends State<AuthPage> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

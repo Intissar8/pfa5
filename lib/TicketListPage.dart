@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pfa5/AuthPage.dart';
 import 'widgets/ticket_card.dart';
 
 class TicketListPage extends StatelessWidget {
@@ -49,36 +50,60 @@ class TicketListPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Create Ticket'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-            ),
-            DropdownButtonFormField<String>(
-              value: priority,
-              decoration: const InputDecoration(labelText: 'Priority'),
-              items: const [
-                DropdownMenuItem(value: 'Low', child: Text('Low')),
-                DropdownMenuItem(value: 'Medium', child: Text('Medium')),
-                DropdownMenuItem(value: 'High', child: Text('High')),
-              ],
-              onChanged: (value) => priority = value!,
-            ),
-          ],
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text('Create Ticket', style: TextStyle(color: Colors.black)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  prefixIcon: Icon(Icons.title),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  prefixIcon: Icon(Icons.description),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: priority,
+                decoration: const InputDecoration(
+                  labelText: 'Priority',
+                  prefixIcon: Icon(Icons.flag),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Low', child: Text('Low')),
+                  DropdownMenuItem(value: 'Medium', child: Text('Medium')),
+                  DropdownMenuItem(value: 'High', child: Text('High')),
+                ],
+                onChanged: (value) => priority = value!,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
+            icon: const Icon(Icons.add),
+            label: const Text('Create'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               if (titleController.text.isEmpty ||
                   descriptionController.text.isEmpty) {
@@ -90,15 +115,14 @@ class TicketListPage extends StatelessWidget {
                 description: descriptionController.text,
                 priority: priority,
               );
-
               Navigator.pop(context);
             },
-            child: const Text('Create'),
           ),
         ],
       ),
     );
   }
+
   void _showEditTicketDialog(
       BuildContext context,
       String ticketId,
@@ -107,43 +131,66 @@ class TicketListPage extends StatelessWidget {
       String currentPriority,
       ) {
     final titleController = TextEditingController(text: currentTitle);
-    final descriptionController =
-    TextEditingController(text: currentDescription);
+    final descriptionController = TextEditingController(text: currentDescription);
     String priority = currentPriority;
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Edit Ticket'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-            ),
-            DropdownButtonFormField<String>(
-              value: priority,
-              decoration: const InputDecoration(labelText: 'Priority'),
-              items: const [
-                DropdownMenuItem(value: 'Low', child: Text('Low')),
-                DropdownMenuItem(value: 'Medium', child: Text('Medium')),
-                DropdownMenuItem(value: 'High', child: Text('High')),
-              ],
-              onChanged: (value) => priority = value!,
-            ),
-          ],
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text('Edit Ticket', style: TextStyle(color: Colors.black)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  prefixIcon: Icon(Icons.title),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  prefixIcon: Icon(Icons.description),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: priority,
+                decoration: const InputDecoration(
+                  labelText: 'Priority',
+                  prefixIcon: Icon(Icons.flag),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Low', child: Text('Low')),
+                  DropdownMenuItem(value: 'Medium', child: Text('Medium')),
+                  DropdownMenuItem(value: 'High', child: Text('High')),
+                ],
+                onChanged: (value) => priority = value!,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
+            icon: const Icon(Icons.save),
+            label: const Text('Save'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               await updateTicket(
                 ticketId: ticketId,
@@ -153,18 +200,46 @@ class TicketListPage extends StatelessWidget {
               );
               Navigator.pop(context);
             },
-            child: const Text('Save'),
           ),
         ],
       ),
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Tickets")),
-      body: StreamBuilder<QuerySnapshot>(
+      appBar: AppBar(
+    title: const Text("My Tickets"),
+    actions: [
+    IconButton(
+    onPressed: () async {
+    await FirebaseAuth.instance.signOut();
+    // After logout, navigate back to login page
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthPage()),
+      );
+      // make sure your AuthPage has a named route '/auth'
+    }
+    },
+    icon: const Icon(Icons.logout),
+    tooltip: 'Logout',
+    ),
+    ],
+    backgroundColor: Colors.deepPurple, // modern color
+    foregroundColor: Colors.white,
+    elevation: 4,
+    shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(
+    bottom: Radius.circular(20),
+    ),
+    ),
+    ),
+
+    body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('tickets')
             .where('ownerId', isEqualTo: uid)

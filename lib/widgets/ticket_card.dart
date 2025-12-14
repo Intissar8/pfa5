@@ -6,8 +6,10 @@ class TicketCard extends StatelessWidget {
   final String description;
   final String status;
   final String priority;
-  final VoidCallback onDelete;
-  final VoidCallback onEdit;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
+  final Widget? extraButton;
+
 
   const TicketCard({
     super.key,
@@ -16,9 +18,12 @@ class TicketCard extends StatelessWidget {
     required this.description,
     required this.status,
     required this.priority,
-    required this.onDelete,
-    required this.onEdit,
+    this.onDelete,
+    this.onEdit,
+    this.extraButton,
   });
+
+
 
   Color _getStatusColor() {
     switch (status) {
@@ -45,7 +50,32 @@ class TicketCard extends StatelessWidget {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    Color _getStatusColor() {
+      switch (status) {
+        case 'Open':
+          return Colors.redAccent;
+        case 'In Progress':
+          return Colors.orangeAccent;
+        case 'Resolved':
+          return Colors.green;
+        default:
+          return Colors.grey;
+      }
+    }
+
+    Color _getPriorityColor() {
+      switch (priority) {
+        case 'High':
+          return Colors.red;
+        case 'Medium':
+          return Colors.orange;
+        default:
+          return Colors.blue;
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -76,16 +106,37 @@ class TicketCard extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'edit') onEdit();
-                  if (value == 'delete') onDelete();
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
-              )
+              if (onEdit != null || onDelete != null)
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'edit' && onEdit != null) onEdit!();
+                    if (value == 'delete' && onDelete != null) onDelete!();
+                  },
+                  itemBuilder: (context) => [
+                    if (onEdit != null)
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, color: Colors.indigo),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                    if (onDelete != null)
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
             ],
           ),
 
@@ -97,7 +148,7 @@ class TicketCard extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
               fontSize: 13,
             ),
           ),
@@ -108,42 +159,49 @@ class TicketCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: _getStatusColor(),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+              Row(
+                children: [
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor().withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: _getStatusColor(),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getPriorityColor().withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  priority,
-                  style: TextStyle(
-                    color: _getPriorityColor(),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getPriorityColor().withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      priority,
+                      style: TextStyle(
+                        color: _getPriorityColor(),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              if (extraButton != null) extraButton!,
             ],
           ),
         ],
       ),
     );
   }
+
 }
