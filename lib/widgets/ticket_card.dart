@@ -20,7 +20,7 @@ class TicketCard extends StatelessWidget {
     required this.onEdit,
   });
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor() {
     switch (status) {
       case 'Open':
         return Colors.redAccent;
@@ -33,77 +33,116 @@ class TicketCard extends StatelessWidget {
     }
   }
 
+  Color _getPriorityColor() {
+    switch (priority) {
+      case 'High':
+        return Colors.red;
+      case 'Medium':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.indigo),
-                      onPressed: onEdit,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: onDelete,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(description, style: const TextStyle(color: Colors.black54)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(status).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: _getStatusColor(status),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Text(
-                  priority,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Header
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') onEdit();
+                  if (value == 'delete') onDelete();
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
+              )
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          /// Description
+          Text(
+            description,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 13,
             ),
-          ],
-        ),
+          ),
+
+          const Spacer(),
+
+          /// Footer
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor().withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: _getStatusColor(),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getPriorityColor().withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  priority,
+                  style: TextStyle(
+                    color: _getPriorityColor(),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

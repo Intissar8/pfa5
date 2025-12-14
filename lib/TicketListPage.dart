@@ -184,36 +184,58 @@ class TicketListPage extends StatelessWidget {
             return const Center(child: Text("No tickets yet"));
           }
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final doc = docs[index];
-              final data = doc.data() as Map<String, dynamic>;
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = 1;
 
-              return TicketCard(
-                id: doc.id,
-                title: data['title'],
-                description: data['description'],
-                status: data['status'],
-                priority: data['priority'],
-                onDelete: () async {
-                  await FirebaseFirestore.instance
-                      .collection('tickets')
-                      .doc(doc.id)
-                      .delete();
-                },
-                onEdit: () {
-                  _showEditTicketDialog(
-                    context,
-                    doc.id,
-                    data['title'],
-                    data['description'],
-                    data['priority'],
+              if (constraints.maxWidth > 1200) {
+                crossAxisCount = 4;
+              } else if (constraints.maxWidth > 900) {
+                crossAxisCount = 3;
+              } else if (constraints.maxWidth > 600) {
+                crossAxisCount = 2;
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.3,
+                ),
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final doc = docs[index];
+                  final data = doc.data() as Map<String, dynamic>;
+
+                  return TicketCard(
+                    id: doc.id,
+                    title: data['title'],
+                    description: data['description'],
+                    status: data['status'],
+                    priority: data['priority'],
+                    onDelete: () async {
+                      await FirebaseFirestore.instance
+                          .collection('tickets')
+                          .doc(doc.id)
+                          .delete();
+                    },
+                    onEdit: () {
+                      _showEditTicketDialog(
+                        context,
+                        doc.id,
+                        data['title'],
+                        data['description'],
+                        data['priority'],
+                      );
+                    },
                   );
                 },
               );
             },
           );
+
 
         },
       ),
