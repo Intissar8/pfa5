@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pfa5/FconsultantTicketPage.dart';
+import 'package:pfa5/technical_consultant_ticket_page.dart';
 import 'services/auth_service.dart';
 import 'TicketListPage.dart';
+
+
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
@@ -45,17 +48,27 @@ class _AuthPageState extends State<AuthPage> {
             context,
             MaterialPageRoute(builder: (_) => TicketListPage()),
           );
-        } else if (role == 'fconsultant') {
+        }
+        else if (role == 'fconsultant') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => FconsultantTicketPage()),
           );
-        } else {
-          // fallback
+        }
+        else if (role == 'tconsultant') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const TechnicalConsultantTicketPage(),
+            ),
+          );
+        }
+        else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Unknown role')),
           );
         }
+
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

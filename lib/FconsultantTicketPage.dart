@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pfa5/AuthPage.dart';
 import 'widgets/ticket_card.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class FconsultantTicketPage extends StatelessWidget {
   FconsultantTicketPage({super.key});
@@ -11,12 +13,35 @@ class FconsultantTicketPage extends StatelessWidget {
   Future<void> updateTicketStatus({
     required String ticketId,
     required String status,
+    String? department,
+    String? priority,
   }) async {
+    Map<String, dynamic> updateData = {'status': status};
+
+    if (department != null) updateData['department'] = department;
+    if (priority != null) updateData['priority'] = priority;
+
     await FirebaseFirestore.instance
         .collection('tickets')
         .doc(ticketId)
-        .update({'status': status});
+        .update(updateData);
+  }
 
+
+  Future<Map<String, dynamic>> classifyTicket(String text) async {
+    final url = Uri.parse("http://192.168.1.9:8000/classify_ticket");
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"text": text}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to classify ticket: ${response.statusCode}");
+    }
   }
 
   // SHOW STATUS EDIT DIALOG
@@ -77,11 +102,11 @@ class FconsultantTicketPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Tickets"),
+        title: const Text("All Tickets"),
         actions: [
           IconButton(
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await   FirebaseAuth.instance.signOut();
               // After logout, navigate back to login page
               if (context.mounted) {
                 Navigator.pushReplacement(
@@ -155,6 +180,7 @@ class FconsultantTicketPage extends StatelessWidget {
                     description: data['description'],
                     status: data['status'],
                     priority: data['priority'],
+                    department: data['department'],
                     onDelete: null, // Consultant cannot delete
                     onEdit: () {
                       _showEditStatusDialog(
@@ -172,8 +198,38 @@ class FconsultantTicketPage extends StatelessWidget {
                         textStyle: const TextStyle(fontSize: 12),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       ),
-                      onPressed: () {
-                        // Action for consulting agent
+                      onPressed: () async {
+                        try {
+                          final result = await classifyTicket(data['description']);
+
+                          // Update Firestore with classified department and priority
+                          await updateTicketStatus(
+                            ticketId: doc.id,
+                            status: data['status'], // keep current status
+                            department: result['department'],
+                            priority: result['priority'],
+                          );
+
+                          // Show result in a dialog
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Classification Result"),
+                              content: Text(
+                                  "Department: ${result['department']}\n"
+                                      "Priority: ${result['priority']}"
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("OK"),
+                                ),
+                              ],
+                            ),
+                          );
+                        } catch (e) {
+                          print(e);
+                        }
                       },
                     ),
                   );

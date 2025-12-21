@@ -18,8 +18,9 @@ class TicketListPage extends StatelessWidget {
     await FirebaseFirestore.instance.collection('tickets').add({
       'title': title,
       'description': description,
-      'status': 'Open',
+      'status': 'In Progress',
       'priority': priority,
+      'department': null,
       'ownerId': uid,
       'createdAt': FieldValue.serverTimestamp(),
     });
