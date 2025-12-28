@@ -6,12 +6,12 @@ from your_classifier_module import classify_ticket_rag
 
 app = FastAPI()
 
-# Allow CORS for your Flutter app
+# Allow CORS for  Flutter app
 origins = [
     "http://localhost",        # for web testing
     "http://127.0.0.1",
     "http://10.0.2.2",        # Android emulator
-    "http://192.168.1.9",     # your PC IP for real devices
+    "http://192.168.1.9",     # PC IP for real devices
 ]
 
 app.add_middleware(
@@ -29,7 +29,7 @@ def classify_ticket(ticket: TicketRequest):
     result = classify_ticket_rag(ticket.text)
     return result
 
-# Optional: run directly
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("ticket_api:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,4 +1,4 @@
-# your_classifier_module.py
+# Our Model
 import pandas as pd
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -9,7 +9,7 @@ import re
 # -----------------------------
 # Step 1: Load CSV and preprocess
 # -----------------------------
-df = pd.read_csv("customer_support_tickets.csv")  # Make sure this file is in the same folder
+df = pd.read_csv("customer_support_tickets.csv")
 df['text'] = df['Ticket Subject'] + " " + df['Ticket Description']
 
 def map_department(ticket_type):

@@ -35,7 +35,7 @@ class AuthService {
       await _firestore.collection('users').doc(user.uid).set({
         'uid': user.uid,
         'email': email,
-        'role': 'client', // 👈 default role
+        'role': 'client',
         'createdAt': FieldValue.serverTimestamp(),
       });
     }

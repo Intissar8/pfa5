@@ -59,7 +59,6 @@ class TicketCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            /// 🔹 TITLE
             Row(
               children: [
                 const Icon(Icons.confirmation_number, size: 18),
@@ -79,7 +78,7 @@ class TicketCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            /// 🔹 DESCRIPTION
+
             Text(
               description,
               maxLines: 2,
@@ -89,8 +88,7 @@ class TicketCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            /// 🔹 CLASSIFICATION INFO
-            /// 🔹 CLASSIFICATION INFO
+
             Wrap(
               spacing: 10,
               runSpacing: 6,
@@ -112,7 +110,7 @@ class TicketCard extends StatelessWidget {
 
             const Spacer(),
 
-            /// 🔹 ACTIONS
+
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
