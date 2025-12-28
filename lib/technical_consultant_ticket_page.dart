@@ -150,7 +150,7 @@ class TechnicalConsultantTicketPage extends StatelessWidget {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1.6, // ⬅ smaller & more compact cards
+                  childAspectRatio: 1.6,
                 ),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {

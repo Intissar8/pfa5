@@ -114,14 +114,14 @@ class FconsultantTicketPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const AuthPage()),
                 );
-                // make sure your AuthPage has a named route '/auth'
+
               }
             },
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
           ),
         ],
-        backgroundColor: Colors.deepPurple, // modern color
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: const RoundedRectangleBorder(
@@ -206,7 +206,7 @@ class FconsultantTicketPage extends StatelessWidget {
                           // Update Firestore with classified department and priority
                           await updateTicketStatus(
                             ticketId: doc.id,
-                            status: data['status'], // keep current status
+                            status: data['status'],
                             department: result['department'],
                             priority: result['priority'],
                           );

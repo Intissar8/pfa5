@@ -223,14 +223,14 @@ class TicketListPage extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (_) => const AuthPage()),
       );
-      // make sure your AuthPage has a named route '/auth'
+
     }
     },
     icon: const Icon(Icons.logout),
     tooltip: 'Logout',
     ),
     ],
-    backgroundColor: Colors.deepPurple, // modern color
+    backgroundColor: Colors.deepPurple,
     foregroundColor: Colors.white,
     elevation: 4,
     shape: const RoundedRectangleBorder(
